@@ -31,7 +31,8 @@ monsterImage.src = "images/monster.png";
 
 // Game objects
 var hero = {
-	speed: 256 // movement in pixels per second
+	speed: 256, // movement in pixels per second
+	body: [{}]
 };
 var monster = {};
 var monstersCaught = 0;
@@ -49,41 +50,65 @@ addEventListener("keyup", function (e) {
 
 // Reset the game when the player catches a monster
 var reset = function () {
-	hero.x = canvas.width / 2;
-	hero.y = canvas.height / 2;
+	//hero.body[0].x = canvas.width / 2;
+	//hero.body[0].y = canvas.height / 2;
+	//resetHero();
 
 	// Throw the monster somewhere on the screen randomly
 	monster.x = 32 + (Math.random() * (canvas.width - 64));
 	monster.y = 32 + (Math.random() * (canvas.height - 64));
 };
 
+var resetHero = function() {
+	for (i = 0; i < hero.body.length; i++){
+		hero.body[i].x = canvas.width / 2;
+		hero.body[i].y = canvas.height / 2;
+	}
+}
+
 // Update game objects
 var update = function (modifier) {
+
+	updateHeroBody();
+
 	if (38 in keysDown) { // Player holding up
-		hero.y -= hero.speed * modifier;
+		hero.body[0].y -= hero.speed * modifier;
 	}
 	if (40 in keysDown) { // Player holding down
-		hero.y += hero.speed * modifier;
+		hero.body[0].y += hero.speed * modifier;
 	}
 	if (37 in keysDown) { // Player holding left
-		hero.x -= hero.speed * modifier;
+		hero.body[0].x -= hero.speed * modifier;
 	}
 	if (39 in keysDown) { // Player holding right
-		hero.x += hero.speed * modifier;
+		hero.body[0].x += hero.speed * modifier;
 	}
 
 	// Are they touching?
 	if (
-		hero.x <= (monster.x + 32)
-		&& monster.x <= (hero.x + 32)
-		&& hero.y <= (monster.y + 32)
-		&& monster.y <= (hero.y + 32)
+		hero.body[0].x <= (monster.x + 32)
+		&& monster.x <= (hero.body[0].x + 32)
+		&& hero.body[0].y <= (monster.y + 32)
+		&& monster.y <= (hero.body[0].y + 32)
 	) {
 		++monstersCaught;
+	    hero.body[hero.body.length] = {};
 		reset();
 	}
 };
 
+var updateHeroBody = function() {
+	for (i = hero.body.length - 1; i > 0; i--){
+		hero.body[i].x = hero.body[i-1].x;
+		hero.body[i].y = hero.body[i-1].y;
+	}
+}
+
+var drawHeroBody = function() {
+	for (i = 0; i < hero.body.length; i++){
+		ctx.drawImage(heroImage, hero.body[i].x, hero.body[i].y);
+	}
+}
 // Draw everything
 var render = function () {
 	if (bgReady) {
@@ -91,7 +116,8 @@ var render = function () {
 	}
 
 	if (heroReady) {
-		ctx.drawImage(heroImage, hero.x, hero.y);
+		//ctx.drawImage(heroImage, hero.body[0].x, hero.body[0].y);
+		drawHeroBody();
 	}
 
 	if (monsterReady) {
@@ -126,5 +152,7 @@ requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame
 
 // Let's play this game!
 var then = Date.now();
+hero.body[0].x = canvas.width / 2;
+hero.body[0].y = canvas.height / 2;
 reset();
 main();
